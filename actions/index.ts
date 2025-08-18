@@ -6,7 +6,6 @@ import CommonActions from "./common.actions";
 import InventoryActions from "./inventory.actions";
 import CartActions from "./cart.actions";
 import CheckoutActions from "./checkout.actions";
-import MainUltimateActions from "./mainUltimate.actions";
 
 export default class App {
   base: BaseActions;
@@ -16,7 +15,6 @@ export default class App {
   inventory: InventoryActions;
   cart: CartActions;
   checkout: CheckoutActions;
-  mainUltimate: MainUltimateActions;
 
   constructor(page: Page, context: BrowserContext) {
     this.base = new BaseActions(page, context);
@@ -26,6 +24,5 @@ export default class App {
     this.inventory = new InventoryActions(page, context);
     this.cart = new CartActions(page, context);
     this.checkout = new CheckoutActions(page, context);
-    this.mainUltimate = new MainUltimateActions(page, context);
   }
 }

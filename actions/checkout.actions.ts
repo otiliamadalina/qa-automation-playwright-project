@@ -1,10 +1,6 @@
 import { BrowserContext, expect, Page } from "@playwright/test";
-import LoginPage from "../pages/login.page";
 import BaseActions from "./base.actions";
 import strings from "../resources/strings.json";
-import InventoryPage from "../pages/inventory.page";
-import { runInContext } from "vm";
-import routes from "../resources/routes.json";
 import CheckoutPage from "../pages/checkoout.page";
 
 export default class CheckoutActions extends BaseActions {

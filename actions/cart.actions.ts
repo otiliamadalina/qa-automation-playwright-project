@@ -1,7 +1,5 @@
 import { BrowserContext, expect, Page } from "@playwright/test";
-import LoginPage from "../pages/login.page";
 import BaseActions from "./base.actions";
-import strings from "../resources/strings.json";
 import CartPage from "../pages/cart.page";
 
 export default class CartActions extends BaseActions {
