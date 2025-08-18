@@ -12,8 +12,6 @@ export default class CartActions extends BaseActions {
     this.cart = new CartPage(page, context);
   }
 
-
-
   async verifyCartProducts() {
     const items = this.cart.cartItems;
     const cartCount = await items.count();
@@ -48,9 +46,8 @@ export default class CartActions extends BaseActions {
     await this.cart.continueShoppingButton.click();
   }
 
-    async goToCheckout() {
+  async goToCheckout() {
     await expect(this.cart.checkoutButton).toBeVisible();
     await this.cart.checkoutButton.click();
   }
-
 }

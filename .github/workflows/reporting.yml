@@ -112,7 +112,7 @@ jobs:
            message: |
              🚀 New commit by: ${{ github.actor }}
              📂 Repository: ${{ github.repository }}
-             🔗 Report: https://${{ github.repository_owner }}.github.io/Project-2/${{ steps.timestampid.outputs.timestamp }}
+             🔗 Report: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/{{ steps.timestampid.outputs.timestamp }}
              🕒 Time: ${{ steps.moldova_time.outputs.timestamp }}
 
       - name: Send a request to webhook
