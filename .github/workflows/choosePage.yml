@@ -98,71 +98,43 @@ jobs:
           publish_dir: ./playwright-report # from what folder to take files. It takes only contents
           destination_dir: ${{ steps.timestampid.outputs.timestamp }} # a sub-directory where to publish to avoid overwriting other reports
 
-      - name: Write URL in summary
-        run: echo "### Test results (link available after 20 secs) - https://${{ github.repository_owner }}.github.io/Project-2/${{ steps.timestampid.outputs.timestamp }}/" >> $GITHUB_STEP_SUMMARY
-
       - name: Get Moldova timestamp
         id: moldova_time
         run: echo "timestamp=$(TZ='Europe/Chisinau' date '+%Y-%m-%d %H:%M:%S %Z')" >> "$GITHUB_OUTPUT"
-
-      - name: Set test result status
-        id: test-status
-        run: |
-           if [ "${{ needs.run-tests.result }}" == "success" ]; then
-           echo "STATUS=✅ Test has succeeded" >> "$GITHUB_OUTPUT"
-            echo "COLOR=#2EB67D" >> "$GITHUB_OUTPUT"
-           elif [ "${{ needs.run-tests.result }}" == "failure" ]; then
-           echo "STATUS=❌ Test has failed" >> "$GITHUB_OUTPUT"
-           echo "COLOR=#E01E5A" >> "$GITHUB_OUTPUT"
-            else
-              echo "STATUS=⏹️ Test was cancelled" >> "$GITHUB_OUTPUT"
-              echo "COLOR=#808080" >> "$GITHUB_OUTPUT"
-              fi
-              
-      - name: Set trigger type
-        id: trigger
-        run: |
-           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-           echo "trigger=manual" >> "$GITHUB_OUTPUT"
-           elif [ "${{ github.event_name }}" == "schedule" ]; then
-           echo "trigger=scheduled" >> "$GITHUB_OUTPUT"
-            else
-           echo "trigger=unknown" >> "$GITHUB_OUTPUT"
-           fi
+        
+      - name: Write URL in summary
+        run: echo "### Test results (link available after 20 secs) - https://${{ github.repository_owner }}.github.io/${{ github.repository }}/${{ steps.timestampid.outputs.timestamp }}/" >> $GITHUB_STEP_SUMMARY
 
       - name: Send Inline Telegram Message
         uses: appleboy/telegram-action@master
         with:
-           to: ${{ secrets.TELEGRAM_TO }}
-           token: ${{ secrets.TELEGRAM_TOKEN }}
-           message: |
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
              🚀 New commit by: ${{ github.actor }}
-             🔍 Trigger: ${{ steps.trigger.outputs.trigger }}
              📂 Repository: ${{ github.repository }}
-             🔗 Report: https://${{ github.repository_owner }}.github.io/Project-2/${{ steps.timestampid.outputs.timestamp }}
+             🔗 Report: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/${{ steps.timestampid.outputs.timestamp }}
              🕒 Time: ${{ steps.moldova_time.outputs.timestamp }}
              📌 Status: ${{ steps.test-status.outputs.STATUS }}
 
+      # - name: Send a message to Discord
+      #   run: |
+      #    RESPONSE=$(curl -H "Content-Type: application/json" -X POST -d '{
+      #      "username": "GitHub",
+      #      "content": "@everyone",
+      #       "embeds": [
+      #        {
+      #          "type": "rich",
+      #          "title": "🚀 New commit by: ${{ github.actor }}",
+      #           "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Report:** https://${{ github.repository_owner }}.github.io/${{ github.repository }}/${{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}\n**📌 Status:** ${{ steps.test-status.outputs.STATUS }}",
+      #          "color": 2123412,
+      #           "author": {
+      #            "name": "${{ github.actor }}",
+      #             "url": "https://github.com/${{ github.actor }}",
+      #             "icon_url": "https://avatars.githubusercontent.com/u/${{ github.actor }}?v=4"
+      #           }
+      #         }
+      #       ]
+      #     }' "${{ secrets.WEBHOOK_URL }}")
+      #     echo "Webhook server response: $RESPONSE"
 
-
-
-      - name: Send a message to Discord
-        run: |
-          RESPONSE=$(curl -H "Content-Type: application/json" -X POST -d '{
-            "username": "GitHub",
-            "content": "@everyone",
-            "embeds": [
-              {
-                "type": "rich",
-                "title": "🚀 New commit by: ${{ github.actor }}",
-                "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Report:** https://${{ github.repository_owner }}.github.io/Project-2/${{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}\n**📌 Status:** ${{ steps.test-status.outputs.STATUS }}",
-                "color": 2123412,
-                "author": {
-                  "name": "${{ github.actor }}",
-                  "url": "https://github.com/${{ github.actor }}",
-                  "icon_url": "https://avatars.githubusercontent.com/u/${{ github.actor }}?v=4"
-                }
-              }
-            ]
-          }' "${{ secrets.WEBHOOK_URL }}")
-          echo "Webhook server response: $RESPONSE"

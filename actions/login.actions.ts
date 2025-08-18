@@ -41,7 +41,7 @@ export default class LoginActions extends BaseActions {
 
   async acceptedUsernameIsVisible() {
     await expect(
-      this.login.h4Locator(strings.loginPage.acceptedUsernames.usernameTitle),
+      this.login.h4Locator(strings.loginPage.acceptedUsernames.usernameTitle)
     ).toBeVisible();
   }
 
@@ -51,4 +51,3 @@ export default class LoginActions extends BaseActions {
     ).toBeVisible();
   }
 }
-
