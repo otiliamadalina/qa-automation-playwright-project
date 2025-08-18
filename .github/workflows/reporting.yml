@@ -124,7 +124,7 @@ jobs:
               {
                 "type": "rich",
                 "title": "🚀 New commit by: ${{ github.actor }}",
-                "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Raport:** https://${{ github.repository_owner }}.github.io/Project-2/${{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}",
+                "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Raport:** https://${{ github.repository_owner }}.github.io/${{ github.repository }}/{{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}",
                 "color": 2123412,
                 "author": {
                   "name": "${{ github.actor }}",

@@ -127,7 +127,7 @@ jobs:
            message: |
              🚀 New commit by: ${{ github.actor }}
              📂 Repository: ${{ github.repository }}
-             🔗 Report: https://${{ github.repository_owner }}.github.io/Project-2/${{ steps.timestampid.outputs.timestamp }}
+             🔗 Report: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/{{ steps.timestampid.outputs.timestamp }}
              🕒 Time: ${{ steps.moldova_time.outputs.timestamp }}
              📌 Status: ${{ steps.test-status.outputs.STATUS }}
 
@@ -143,7 +143,7 @@ jobs:
               {
                 "type": "rich",
                 "title": "🚀 New commit by: ${{ github.actor }}",
-                "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Report:** https://${{ github.repository_owner }}.github.io/Project-2/${{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}\n**📌 Status:** ${{ steps.test-status.outputs.STATUS }}",
+                "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Report:** https://${{ github.repository_owner }}.github.io/${{ github.repository }}/{{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}\n**📌 Status:** ${{ steps.test-status.outputs.STATUS }}",
                 "color": 2123412,
                 "author": {
                   "name": "${{ github.actor }}",
