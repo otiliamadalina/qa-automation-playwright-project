@@ -1,9 +1,7 @@
 import { BrowserContext, expect, Page } from "@playwright/test";
-import LoginPage from "../pages/login.page";
 import BaseActions from "./base.actions";
 import strings from "../resources/strings.json";
 import InventoryPage from "../pages/inventory.page";
-import { runInContext } from "vm";
 import routes from "../resources/routes.json";
 
 export default class InventoryActions extends BaseActions {
@@ -14,8 +12,9 @@ export default class InventoryActions extends BaseActions {
     this.inventory = new InventoryPage(page, context);
   }
 
-  async checkProductHeader(productHeader: string) {
+  async checkProductHeader() {
     await expect(this.inventory.productHeader).toBeVisible();
+    await expect(this.inventory.productHeader).toHaveText(strings.inventoryPage.productHeader);
   }
 
   async checkMenuButton() {

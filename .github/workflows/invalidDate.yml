@@ -1,4 +1,4 @@
-name: invalid-data
+name: resolved-problem
 
 on:
   workflow_dispatch:

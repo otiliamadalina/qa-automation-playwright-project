@@ -1,0 +1,41 @@
+name: PR Merge
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+    lint-tests:
+      runs-on: ubuntu-latest
+
+    smoke-tests:
+     if: always()
+     needs: [lint-tests]
+     runs-on: ubuntu-latest
+
+     steps:
+       - uses: actions/checkout@v4
+
+       - name: Setup Node.js
+         uses: actions/setup-node@v4
+         with:
+          node-version: 20
+
+       - name: Install dependencies
+         run: npm ci
+
+       - name: Install Playwright Browsers
+         run: npx playwright install --with-deps
+
+       - name: Run Playwright smoke tests
+         run: |
+          echo "Running Smoke Tests"
+          npx playwright test --grep @smoke --project=chromium
+      
+       - name: Upload blob report to GitHub Actions Artifacts
+         if: always()
+         continue-on-error: true
+         uses: actions/upload-artifact@v4
+         with:
+          name: all-blob-reports
+          path: blob-report
+          retention-days: 14
