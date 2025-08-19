@@ -104,34 +104,49 @@ jobs:
         id: moldova_time
         run: echo "timestamp=$(TZ='Europe/Chisinau' date '+%Y-%m-%d %H:%M:%S %Z')" >> "$GITHUB_OUTPUT"
 
+      - name: Format repo name
+        id: repo_slug
+        run: echo "slug=$(echo '${GITHUB_REPOSITORY#*/}' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')" >> "$GITHUB_OUTPUT"
+
+      - name: Set test status
+        id: test-status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "STATUS=✅ Passed" >> $GITHUB_OUTPUT
+          else
+            echo "STATUS=❌ Failed" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send Inline Telegram Message
         uses: appleboy/telegram-action@master
         with:
-           to: ${{ secrets.TELEGRAM_TO }}
-           token: ${{ secrets.TELEGRAM_TOKEN }}
-           message: |
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
              🚀 New commit by: ${{ github.actor }}
              📂 Repository: ${{ github.repository }}
-             🔗 Report: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/{{ steps.timestampid.outputs.timestamp }}
+             🔗 Report: https://${{ github.repository_owner }}.github.io/${{ steps.repo_slug.outputs.slug }}/${{ steps.timestampid.outputs.timestamp }}
              🕒 Time: ${{ steps.moldova_time.outputs.timestamp }}
+             📌 Status: ${{ steps.test-status.outputs.STATUS }}
 
-      - name: Send a request to webhook
-        run: |
-          RESPONSE=$(curl -H "Content-Type: application/json" -X POST -d '{
-            "username": "GitHub",
-            "content": "@everyone",
-            "embeds": [
-              {
-                "type": "rich",
-                "title": "🚀 New commit by: ${{ github.actor }}",
-                "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Raport:** https://${{ github.repository_owner }}.github.io/${{ github.repository }}/{{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}",
-                "color": 2123412,
-                "author": {
-                  "name": "${{ github.actor }}",
-                  "url": "https://github.com/${{ github.actor }}",
-                  "icon_url": "https://avatars.githubusercontent.com/u/${{ github.actor }}?v=4"
-                }
-              }
-            ]
-          }' "${{ secrets.WEBHOOK_URL }}")
-          echo "Webhook server response: $RESPONSE"
+      # - name: Send a message to Discord
+      #   run: |
+      #    RESPONSE=$(curl -H "Content-Type: application/json" -X POST -d '{
+      #      "username": "GitHub",
+      #      "content": "@everyone",
+      #       "embeds": [
+      #        {
+      #          "type": "rich",
+      #          "title": "🚀 New commit by: ${{ github.actor }}",
+      #           "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Report: https://${{ github.repository_owner }}.github.io/${{ steps.repo_slug.outputs.slug }}/${{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}\n**📌 Status:** ${{ steps.test-status.outputs.STATUS }}",
+      #          "color": 2123412,
+      #           "author": {
+      #            "name": "${{ github.actor }}",
+      #             "url": "https://github.com/${{ github.actor }}",
+      #             "icon_url": "https://avatars.githubusercontent.com/u/${{ github.actor }}?v=4"
+      #           }
+      #         }
+      #       ]
+      #     }' "${{ secrets.WEBHOOK_URL }}")
+      #     echo "Webhook server response: $RESPONSE"
