@@ -47,7 +47,6 @@ jobs:
           retention-days: 14
 
 
-
           
   merge-reports-and-upload:
     # Merge reports after playwright tests, even if some shards have failed
@@ -127,6 +126,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
              🚀 New commit by: ${{ github.actor }}
+             🔍 Trigger: ${{ github.event_name }}
              📂 Repository: ${{ github.repository }}
              🔗 Report: https://${{ github.repository_owner }}.github.io/${{ steps.repo_slug.outputs.slug }}/${{ steps.timestampid.outputs.timestamp }}
              🕒 Time: ${{ steps.moldova_time.outputs.timestamp }}
