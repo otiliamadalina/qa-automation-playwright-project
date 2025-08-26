@@ -127,10 +127,6 @@ jobs:
       - name: Write URL in summary
         run: echo "### Test results (link available after 20 secs) - https://${{ github.repository_owner }}.github.io/qa-automation-playwright-project/${{ steps.timestampid.outputs.timestamp }}/" >> $GITHUB_STEP_SUMMARY
 
-      - name: Format repo name
-        id: repo_slug
-        run: echo "slug=$(echo '${GITHUB_REPOSITORY#*/}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
-
       - name: Send Inline Telegram Message
         uses: appleboy/telegram-action@master
         with:
