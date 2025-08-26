@@ -21,7 +21,7 @@ jobs:
       - name: Run npm audit for vulnerabilities
         run: npm audit --audit-level=high
 
-  playwright-tests:
+  run-tests:
     name: Playwright Tests
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -51,7 +51,7 @@ jobs:
   merge-reports-and-upload:
     # Merge reports after playwright tests, even if some shards have failed
     if: always()
-    needs: [playwright-tests]
+    needs: [run-tests]
     runs-on: ubuntu-latest
     outputs:
       timestamp: ${{ steps.timestampid.outputs.timestamp }}
@@ -104,34 +104,62 @@ jobs:
         id: moldova_time
         run: echo "timestamp=$(TZ='Europe/Chisinau' date '+%Y-%m-%d %H:%M:%S %Z')" >> "$GITHUB_OUTPUT"
 
+      - name: Set test result status
+        id: test-status
+        run: |
+          if [ "${{ needs.run-tests.result }}" == "success" ]; then
+          echo "STATUS=✅ Test has succeeded" >> "$GITHUB_OUTPUT"
+           echo "COLOR=#2EB67D" >> "$GITHUB_OUTPUT"
+          elif [ "${{ needs.run-tests.result }}" == "failure" ]; then
+          echo "STATUS=❌ Test has failed" >> "$GITHUB_OUTPUT"
+          echo "COLOR=#E01E5A" >> "$GITHUB_OUTPUT"
+           else
+             echo "STATUS=⏹️ Test was cancelled" >> "$GITHUB_OUTPUT"
+             echo "COLOR=#808080" >> "$GITHUB_OUTPUT"
+             fi
+
+      - name: Set trigger type
+        id: trigger
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          echo "trigger=manual" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" == "schedule" ]; then
+          echo "trigger=scheduled" >> "$GITHUB_OUTPUT"
+           else
+          echo "trigger=unknown" >> "$GITHUB_OUTPUT"
+          fi
+
+
       - name: Send Inline Telegram Message
         uses: appleboy/telegram-action@master
         with:
-           to: ${{ secrets.TELEGRAM_TO }}
-           token: ${{ secrets.TELEGRAM_TOKEN }}
-           message: |
-             🚀 New commit by: ${{ github.actor }}
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            🚀 New commit by: ${{ github.actor }}
+             🔍 Trigger: ${{ steps.trigger.outputs.trigger }}
              📂 Repository: ${{ github.repository }}
-             🔗 Report: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/{{ steps.timestampid.outputs.timestamp }}
+             🔗 Report: https://${{ github.repository_owner }}.github.io/qa-automation-playwright-project/${{ steps.timestampid.outputs.timestamp }}
              🕒 Time: ${{ steps.moldova_time.outputs.timestamp }}
+            📌 Status: ${{ steps.test-status.outputs.STATUS }}
 
-      - name: Send a request to webhook
-        run: |
-          RESPONSE=$(curl -H "Content-Type: application/json" -X POST -d '{
-            "username": "GitHub",
-            "content": "@everyone",
-            "embeds": [
-              {
-                "type": "rich",
-                "title": "🚀 New commit by: ${{ github.actor }}",
-                "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Raport:** https://${{ github.repository_owner }}.github.io/${{ github.repository }}/{{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}",
-                "color": 2123412,
-                "author": {
-                  "name": "${{ github.actor }}",
-                  "url": "https://github.com/${{ github.actor }}",
-                  "icon_url": "https://avatars.githubusercontent.com/u/${{ github.actor }}?v=4"
-                }
-              }
-            ]
-          }' "${{ secrets.WEBHOOK_URL }}")
-          echo "Webhook server response: $RESPONSE"
+      # - name: Send a message to Discord
+      #   run: |
+      #    RESPONSE=$(curl -H "Content-Type: application/json" -X POST -d '{
+      #      "username": "GitHub",
+      #      "content": "@everyone",
+      #       "embeds": [
+      #        {
+      #          "type": "rich",
+      #          "title": "🚀 New commit by: ${{ github.actor }}",
+      #           "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Report: https://${{ github.repository_owner }}.github.io/${{ steps.repo_slug.outputs.slug }}/${{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}\n**📌 Status:** ${{ steps.test-status.outputs.STATUS }}",
+      #          "color": 2123412,
+      #           "author": {
+      #            "name": "${{ github.actor }}",
+      #             "url": "https://github.com/${{ github.actor }}",
+      #             "icon_url": "https://avatars.githubusercontent.com/u/${{ github.actor }}?v=4"
+      #           }
+      #         }
+      #       ]
+      #     }' "${{ secrets.WEBHOOK_URL }}")
+      #     echo "Webhook server response: $RESPONSE"

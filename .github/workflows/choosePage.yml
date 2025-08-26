@@ -14,7 +14,6 @@ on:
           - smoke
           - regression
 
-
 jobs:
   run-tests:
     runs-on: ubuntu-latest
@@ -36,7 +35,7 @@ jobs:
         run: |
           echo "Testing page: ${{ github.event.inputs.page }}"
           npx playwright test --grep @${{ github.event.inputs.page }} --project=chromium
-      
+
       - name: Upload blob report to GitHub Actions Artifacts
         if: always()
         continue-on-error: true
@@ -46,9 +45,6 @@ jobs:
           path: blob-report
           retention-days: 14
 
-
-
-          
   merge-reports-and-upload:
     # Merge reports after playwright tests, even if some shards have failed
     if: always()
@@ -56,6 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       timestamp: ${{ steps.timestampid.outputs.timestamp }}
+
     steps:
       # We want a unique identifier to be used when we create subdirectories for our github pages with reports
       - name: Set a timestamp
@@ -101,9 +98,34 @@ jobs:
       - name: Get Moldova timestamp
         id: moldova_time
         run: echo "timestamp=$(TZ='Europe/Chisinau' date '+%Y-%m-%d %H:%M:%S %Z')" >> "$GITHUB_OUTPUT"
-        
+
+      - name: Set test result status
+        id: test-status
+        run: |
+          if [ "${{ needs.run-tests.result }}" == "success" ]; then
+          echo "STATUS=✅ Test has succeeded" >> "$GITHUB_OUTPUT"
+           echo "COLOR=#2EB67D" >> "$GITHUB_OUTPUT"
+          elif [ "${{ needs.run-tests.result }}" == "failure" ]; then
+          echo "STATUS=❌ Test has failed" >> "$GITHUB_OUTPUT"
+          echo "COLOR=#E01E5A" >> "$GITHUB_OUTPUT"
+           else
+             echo "STATUS=⏹️ Test was cancelled" >> "$GITHUB_OUTPUT"
+             echo "COLOR=#808080" >> "$GITHUB_OUTPUT"
+             fi
+
+      - name: Set trigger type
+        id: trigger
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          echo "trigger=manual" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" == "schedule" ]; then
+          echo "trigger=scheduled" >> "$GITHUB_OUTPUT"
+           else
+          echo "trigger=unknown" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Write URL in summary
-        run: echo "### Test results (link available after 20 secs) - https://${{ github.repository_owner }}.github.io/${{ github.repository }}/${{ steps.timestampid.outputs.timestamp }}/" >> $GITHUB_STEP_SUMMARY
+        run: echo "### Test results (link available after 20 secs) - https://${{ github.repository_owner }}.github.io/qa-automation-playwright-project/${{ steps.timestampid.outputs.timestamp }}/" >> $GITHUB_STEP_SUMMARY
 
       - name: Send Inline Telegram Message
         uses: appleboy/telegram-action@master
@@ -111,11 +133,12 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-             🚀 New commit by: ${{ github.actor }}
+            🚀 New commit by: ${{ github.actor }}
+             🔍 Trigger: ${{ steps.trigger.outputs.trigger }}
              📂 Repository: ${{ github.repository }}
-             🔗 Report: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/${{ steps.timestampid.outputs.timestamp }}
+             🔗 Report: https://${{ github.repository_owner }}.github.io/qa-automation-playwright-project/${{ steps.timestampid.outputs.timestamp }}
              🕒 Time: ${{ steps.moldova_time.outputs.timestamp }}
-             📌 Status: ${{ steps.test-status.outputs.STATUS }}
+            📌 Status: ${{ steps.test-status.outputs.STATUS }}
 
       # - name: Send a message to Discord
       #   run: |
@@ -126,7 +149,7 @@ jobs:
       #        {
       #          "type": "rich",
       #          "title": "🚀 New commit by: ${{ github.actor }}",
-      #           "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Report:** https://${{ github.repository_owner }}.github.io/${{ github.repository }}/${{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}\n**📌 Status:** ${{ steps.test-status.outputs.STATUS }}",
+      #           "description": "**📂 Repository:** ${{ github.repository }}\n**🔗 Report: https://${{ github.repository_owner }}.github.io/qa-automation-playwright-project/${{ steps.timestampid.outputs.timestamp }}\n**🕒 Time:** ${{ steps.moldova_time.outputs.timestamp }}\n**📌 Status:** ${{ steps.test-status.outputs.STATUS }}",
       #          "color": 2123412,
       #           "author": {
       #            "name": "${{ github.actor }}",
@@ -137,4 +160,3 @@ jobs:
       #       ]
       #     }' "${{ secrets.WEBHOOK_URL }}")
       #     echo "Webhook server response: $RESPONSE"
-
